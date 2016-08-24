@@ -10,15 +10,14 @@ pygame.display.set_caption('Tetris')
 #########################
 ### Basic tetris code ###
 #########################
-#
 
 def draw_board(board):
     for row_count, row in enumerate(board):
             for col_count, col in enumerate(row):
-                if(col == 1):
-                    color = (0, 0, 255)
-                elif(col == 3):
+                if [row_count, col_count] == pivot:
                     color = (0, 255, 0)
+                elif col == 1:
+                    color = (0, 0, 255)
                 else:
                     color = (255, 255, 255)
                 pygame.draw.rect(screen, color, (40 * col_count, 40 * row_count, 40, 40))
@@ -27,6 +26,8 @@ board = []
 
 for i in range(0,10):
     board.append([0,0,0,0,0,0,0,0,0,0])
+
+pivot = []
 
 # initialize clock. used later in the loop.
 clock = pygame.time.Clock()
@@ -39,8 +40,12 @@ while done == False:
         if event.type == pygame.QUIT:
             done = True
         if event.type == pygame.MOUSEBUTTONDOWN:
-            board[int(pygame.mouse.get_pos()[1] / 40)][int(pygame.mouse.get_pos()[0] / 40)] = event.button
-            print event.button
+            if 1 == event.button:
+                board[int(pygame.mouse.get_pos()[1] / 40)][int(pygame.mouse.get_pos()[0] / 40)] = 1
+            elif 2 == event.button:
+                board[int(pygame.mouse.get_pos()[1] / 40)][int(pygame.mouse.get_pos()[0] / 40)] = 0
+            elif 3 == event.button:
+                pivot = [int(pygame.mouse.get_pos()[1] / 40), int(pygame.mouse.get_pos()[0] / 40)]
     # write game logic here
  
     # clear the screen before drawing
