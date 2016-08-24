@@ -30,8 +30,8 @@ def rotate_block(x, y, pivot_x, pivot_y):
     x -= pivot_x
     y -= pivot_y
 
-    new_x = x * math.cos(-1.5) - y * math.sin(-1.5)
-    new_y = y * math.cos(-1.5) + x * math.sin(-1.5)
+    new_x = x * math.cos(-1.5708) - y * math.sin(-1.5708)
+    new_y = y * math.cos(-1.5708) + x * math.sin(-1.5708)
 
     return int(round(new_x + pivot_x)), int(round(new_y + pivot_y))
 
