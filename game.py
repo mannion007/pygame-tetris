@@ -25,20 +25,17 @@ def draw_board(board):
                     color = (255, 255, 255)
                 pygame.draw.rect(screen, color, (40 * col_count, 40 * row_count, 40, 40))
 
-def rotate_block(x, y, pivot_x, pivot_y):
+def rotate_block(x, y, pivot_x, pivot_y, degrees):
 
-    x -= pivot_x
-    y -= pivot_y
+    new_x = (x - pivot_x) * math.cos(math.radians(degrees)) - (y - pivot_y) * math.sin(math.radians(degrees)) + pivot_x
+    new_y = (y - pivot_y) * math.cos(math.radians(degrees)) + (x - pivot_x) * math.sin(math.radians(degrees)) + pivot_y
 
-    new_x = x * math.cos(-1.5708) - y * math.sin(-1.5708)
-    new_y = y * math.cos(-1.5708) + x * math.sin(-1.5708)
-
-    return int(round(new_x + pivot_x)), int(round(new_y + pivot_y))
+    return int(round(new_x)), int(round(new_y))
 
 board = []
 
 for i in range(0,10):
-    board.append([0,0,0,0,0,0,0,0,0,0])
+    board.append([0] * 10)
 
 pivot = []
 
@@ -64,8 +61,9 @@ while done == False:
             for row_count, row in enumerate(board):
                 for col_count, col in enumerate(row):
                     if board[row_count][col_count] == 1:
-                        new_location = rotate_block(row_count, col_count, pivot[0], pivot[1])
-                        #print new_location[0]
+                        new_location = rotate_block(row_count, col_count, pivot[0], pivot[1], -90)
+                        print new_location[0]
+                        print new_location[1]
                         board[new_location[0]][new_location[1]] = 2
                         #print new_location
                         
