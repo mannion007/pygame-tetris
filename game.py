@@ -1,5 +1,8 @@
 import pygame
 import math
+
+pivot_color = (142,39,168)
+block_color = (39,119,168)
  
 # initialize game engine
 pygame.init()
@@ -8,35 +11,27 @@ size = [400, 400]
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Tetris')
 
-#########################
-### Basic tetris code ###
-#########################
-
 def draw_board(board):
     for row_count, row in enumerate(board):
             for col_count, col in enumerate(row):
                 if [row_count, col_count] == pivot:
-                    color = (0, 255, 0)
+                    pygame.draw.rect(screen, pivot_color, (40 * col_count, 40 * row_count, 40, 40))
                 elif col == 1:
-                    color = (0, 0, 255)
-                elif col == 2:
-                    color = (255, 0, 0)
-                else:
-                    color = (255, 255, 255)
-                pygame.draw.rect(screen, color, (40 * col_count, 40 * row_count, 40, 40))
+                    pygame.draw.rect(screen, block_color, (40 * col_count, 40 * row_count, 40, 40))
 
-def rotate_block(x, y, pivot_x, pivot_y, degrees):
-
+def rotate(x, y, pivot_x, pivot_y, degrees):
     new_x = (x - pivot_x) * math.cos(math.radians(degrees)) - (y - pivot_y) * math.sin(math.radians(degrees)) + pivot_x
     new_y = (y - pivot_y) * math.cos(math.radians(degrees)) + (x - pivot_x) * math.sin(math.radians(degrees)) + pivot_y
-
     return int(round(new_x)), int(round(new_y))
 
-board = []
+def build_board():
+    board = []
+    for i in range(0,10):
+        board.append([0] * 10)
+    return board
 
-for i in range(0,10):
-    board.append([0] * 10)
 
+board = build_board()
 pivot = []
 
 # initialize clock. used later in the loop.
@@ -56,16 +51,16 @@ while done == False:
                 board[int(pygame.mouse.get_pos()[1] / 40)][int(pygame.mouse.get_pos()[0] / 40)] = 0
             elif 3 == event.button:
                 pivot = [int(pygame.mouse.get_pos()[1] / 40), int(pygame.mouse.get_pos()[0] / 40)]
-        if pygame.key.get_pressed()[pygame.K_SPACE] != 0:
-                    
-            for row_count, row in enumerate(board):
-                for col_count, col in enumerate(row):
-                    if board[row_count][col_count] == 1:
-                        new_location = rotate_block(row_count, col_count, pivot[0], pivot[1], -90)
-                        print new_location[0]
-                        print new_location[1]
-                        board[new_location[0]][new_location[1]] = 2
-                        #print new_location
+        
+        elif event.type == pygame.KEYDOWN:
+            if pygame.K_SPACE == event.key:
+                new_board = build_board()
+                for row_count, row in enumerate(board):
+                    for col_count, col in enumerate(row):
+                        if board[row_count][col_count] == 1:
+                            new_location = rotate(row_count, col_count, pivot[0], pivot[1], -90)
+                            new_board[new_location[0]][new_location[1]] = 1
+                board = new_board
                         
     # write game logic here
  
