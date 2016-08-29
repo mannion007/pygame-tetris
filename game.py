@@ -211,7 +211,7 @@ class piece(object):
         for row_count, row in enumerate(tetrominoes[self.tetromino_name][self.get_next_frame()]):
             for col_count, col in enumerate(row):
                 if col > 0:
-                    if col_count + self.x < 0 or col_count + self.x > board_width - 1:
+                    if col_count + self.x < 0 or col_count + self.x > board_width - 1 or row_count + self.y + 1 > board_height - 1:
                         return False
         return True        
 
