@@ -7,11 +7,10 @@ board_height = 24
 block_size = 40
 size = [board_width * block_size, board_height * block_size]
 
-block_color = (39,119,168)
 empty_color = (0,0,0)
 
 move_down_event = pygame.USEREVENT + 1
-pygame.time.set_timer(move_down_event, 150)
+pygame.time.set_timer(move_down_event, 200)
 
 tetrominoes = {
     'i' : [
@@ -156,7 +155,7 @@ colors = {
     4 : (255,255,0)
 }
 
-class piece:
+class piece(object):
 
     def __init__(self):
         self.x = 4
@@ -174,50 +173,62 @@ class piece:
                     pygame.draw.rect(screen, self.color, ((block_size * col_count) + (self.x * block_size), (block_size * row_count) + ((self.y * block_size)), block_size, block_size))
 
     def rotate(self):
+        if self.can_rotate():
+            self.current_frame = self.get_next_frame()
+            self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
+
+    def get_next_frame(self):
         if self.current_frame == self.frames:
-            self.current_frame = 0
+            return 0
         else:
-            self.current_frame += 1
-        
-        self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
+            return self.current_frame + 1
 
     def move_down(self, speed):
-        if self.can_move():
-            self.y = self.y + speed
+        self.y = self.y + speed
 
-    def move_left(self):
-        self.x = self.x - 1
+    def move_horizontal(self, x_speed):
+        if self.can_move_horizontal(x_speed):
+            self.x = self.x + x_speed
 
-    def move_right(self):
-        self.x = self.x + 1
-
-    def can_move(self):
+    def can_move_horizontal(self, x_speed):
+        for row_count, row in enumerate(self.tetromino):
+            for col_count, col in enumerate(row):
+                if col > 0:
+                    if col_count + self.x + x_speed < 0 or col_count + self.x + x_speed > board_width - 1:
+                        return False
         return True
- 
+
+    def can_rotate(self):
+        for row_count, row in enumerate(tetrominoes[self.tetromino_name][self.get_next_frame()]):
+            for col_count, col in enumerate(row):
+                if col > 0:
+                    print col_count + self.x
+                    if col_count + self.x < 0 or col_count + self.x > board_width - 1:
+                        return False
+        return True        
+
+class board(object):
+
+    def __init__(self):
+        self.board = []
+        for i in range(0,board_height):
+            self.board.append([0] * board_width)
+
+    def draw(self, screen):
+        for row_count, row in enumerate(self.board):
+                for col_count, col in enumerate(row):
+                    if col > 0:
+                        pygame.draw.rect(screen, colors[col], (block_size * col_count, block_size * row_count, block_size, block_size))
+
 # initialize game engine
 pygame.init()
+board = board()
+piece = piece()
 
 # set screen width/height and caption
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Pytris')
 
-def draw_board(board):
-    for row_count, row in enumerate(board):
-            for col_count, col in enumerate(row):
-                if [row_count, col_count] == pivot:
-                    pygame.draw.rect(screen, pivot_color, (block_size * col_count, block_size * row_count, block_size, block_size))
-                elif col == 1:
-                    pygame.draw.rect(screen, block_color, (block_size * col_count, block_size * row_count, block_size, block_size))
-
-def build_board():
-    board = []
-    for i in range(0,10):
-        board.append([0] * 10)
-    return board
-
-
-board = build_board()
-piece = piece()
 
 # initialize clock. used later in the loop.
 clock = pygame.time.Clock()
@@ -235,9 +246,9 @@ while done == False:
             if pygame.K_SPACE == event.key:
                 piece.rotate()
             elif pygame.K_a == event.key:
-                piece.move_left()
+                piece.move_horizontal(-1)
             elif pygame.K_d == event.key:
-                piece.move_right()
+                piece.move_horizontal(1)
 
     # write game logic here
 
@@ -246,16 +257,15 @@ while done == False:
 
     # clear the screen before drawing
     screen.fill(empty_color)
-    #screen.fill((255,255,255))
     
     # write draw code here
-    #draw_board(board)
+    board.draw(screen)
     piece.draw(screen)
 
     # display what's drawn. this might change.
     pygame.display.update()
     # run at 10 fps
-    clock.tick(10)
+    clock.tick(60)
  
 # close the window and quit
 pygame.quit()
