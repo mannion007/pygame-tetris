@@ -161,35 +161,24 @@ class piece(object):
         self.x = 4
         self.y = 0
         self.tetromino_name = random.choice(tetrominoes.keys())
-        self.color = colors[random.choice(colors.keys())]
+        self.color = random.choice(colors.keys())
         self.frames = len(tetrominoes[self.tetromino_name]) - 1
         self.current_frame = random.randint(0,self.frames)
         self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
+
+        self.has_vertical_collision = False
 
     def draw(self, screen):
         for row_count, row in enumerate(self.tetromino):
             for col_count, col in enumerate(row):
                 if col == 1:
-                    pygame.draw.rect(screen, self.color, ((block_size * col_count) + (self.x * block_size), (block_size * row_count) + ((self.y * block_size)), block_size, block_size))
-
-    def rotate(self):
-        if self.can_rotate():
-            self.current_frame = self.get_next_frame()
-            self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
+                    pygame.draw.rect(screen, colors[self.color], ((block_size * col_count) + (self.x * block_size), (block_size * row_count) + ((self.y * block_size)), block_size, block_size))
 
     def get_next_frame(self):
         if self.current_frame == self.frames:
             return 0
         else:
             return self.current_frame + 1
-
-    def move_down(self, speed):
-        if self.can_move_down():
-            self.y = self.y + speed
-
-    def move_horizontal(self, x_speed):
-        if self.can_move_horizontal(x_speed):
-            self.x = self.x + x_speed
 
     def can_move_horizontal(self, x_speed):
         for row_count, row in enumerate(self.tetromino):
@@ -199,13 +188,23 @@ class piece(object):
                         return False
         return True
 
+    def move_horizontal(self, x_speed):
+        if self.can_move_horizontal(x_speed):
+            self.x = self.x + x_speed
+
     def can_move_down(self):
         for row_count, row in enumerate(self.tetromino):
             for col_count, col in enumerate(row):
                 if col > 0:
                     if row_count + self.y + 1 > board_height - 1:
+                        self.has_vertical_collision = True
                         return False
+        self.has_vertical_collision = False
         return True        
+
+    def move_down(self, speed):
+        if self.can_move_down():
+            self.y = self.y + speed
 
     def can_rotate(self):
         for row_count, row in enumerate(tetrominoes[self.tetromino_name][self.get_next_frame()]):
@@ -213,7 +212,18 @@ class piece(object):
                 if col > 0:
                     if col_count + self.x < 0 or col_count + self.x > board_width - 1 or row_count + self.y + 1 > board_height - 1:
                         return False
-        return True        
+        return True
+
+    def rotate(self):
+        if self.can_rotate():
+            self.current_frame = self.get_next_frame()
+            self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
+
+    def add_to_board(self, board):
+        for row_count, row in enumerate(tetrominoes[self.tetromino_name][self.current_frame]):
+            for col_count, col in enumerate(row):
+                if col > 0:
+                    board.board[row_count + self.y][col_count + self.x] = self.color
 
 class board(object):
 
@@ -260,7 +270,9 @@ while done == False:
 
     # write game logic here
 
-    if piece.y > board_height:
+    #if piece.y > board_height:
+    if piece.has_vertical_collision and not piece.can_move_down():
+        piece.add_to_board(board)
         piece.__init__()
 
     # clear the screen before drawing
