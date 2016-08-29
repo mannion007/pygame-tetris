@@ -184,7 +184,8 @@ class piece(object):
             return self.current_frame + 1
 
     def move_down(self, speed):
-        self.y = self.y + speed
+        if self.can_move_down():
+            self.y = self.y + speed
 
     def move_horizontal(self, x_speed):
         if self.can_move_horizontal(x_speed):
@@ -198,11 +199,18 @@ class piece(object):
                         return False
         return True
 
+    def can_move_down(self):
+        for row_count, row in enumerate(self.tetromino):
+            for col_count, col in enumerate(row):
+                if col > 0:
+                    if row_count + self.y + 1 > board_height - 1:
+                        return False
+        return True        
+
     def can_rotate(self):
         for row_count, row in enumerate(tetrominoes[self.tetromino_name][self.get_next_frame()]):
             for col_count, col in enumerate(row):
                 if col > 0:
-                    print col_count + self.x
                     if col_count + self.x < 0 or col_count + self.x > board_width - 1:
                         return False
         return True        
