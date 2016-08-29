@@ -2,124 +2,197 @@ import pygame
 import math
 import random
 
-board_width = 10
+board_width = 13
 board_height = 24
-block_size = 30
-
+block_size = 40
 size = [board_width * block_size, board_height * block_size]
 
-pivot_color = (142,39,168)
 block_color = (39,119,168)
 empty_color = (0,0,0)
 
-# Create event to move down every 1 second
 move_down_event = pygame.USEREVENT + 1
 pygame.time.set_timer(move_down_event, 150)
 
 tetrominoes = {
     'i' : [
-    [0,0,1,0,0],
-    [0,0,1,0,0],
-    [0,0,1,0,0],
-    [0,0,1,0,0],
-    [0,0,0,0,0]],
+        [
+            [0,0,1,0,0],
+            [0,0,1,0,0],
+            [0,0,1,0,0],
+            [0,0,1,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,0,0,0],
+            [1,1,1,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ],
     'o' : [
-    [0,0,0,0,0],
-    [0,1,1,0,0],
-    [0,1,1,0,0],
-    [0,0,0,0,0],
-    [0,0,0,0,0]],
+        [
+            [0,1,1,0,0],
+            [0,1,1,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ],
     't' : [
-    [0,0,0,0,0],
-    [0,1,1,1,0],
-    [0,0,1,0,0],
-    [0,0,0,0,0],
-    [0,0,0,0,0]],
-    'z' : [
-    [0,0,0,0,0],
-    [0,0,1,1,0],
-    [0,1,1,0,0],
-    [0,0,0,0,0],
-    [0,0,0,0,0]],
+        [
+            [0,1,1,1,0],
+            [0,0,1,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,0,1,0],
+            [0,0,1,1,0],
+            [0,0,0,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,0,0,0],
+            [0,0,1,0,0],
+            [0,1,1,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,1,0,0,0],
+            [0,1,1,0,0],
+            [0,1,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ],
     's' : [
-    [0,0,0,0,0],
-    [0,1,1,0,0],
-    [0,0,1,1,0],
-    [0,0,0,0,0],
-    [0,0,0,0,0]],
+        [
+            [0,0,1,1,0],
+            [0,1,1,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,1,0,0],
+            [0,0,1,1,0],
+            [0,0,0,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ],
+    'z' : [
+        [
+            [0,1,1,0,0],
+            [0,0,1,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,0,1,0],
+            [0,0,1,1,0],
+            [0,0,1,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ],
     'j' : [
-    [0,0,0,0,0],
-    [0,0,1,0,0],
-    [0,0,1,0,0],
-    [0,1,1,0,0],
-    [0,0,0,0,0]],
+        [
+            [0,0,1,0,0],
+            [0,0,1,0,0],
+            [0,1,1,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+        ],
+        [
+            [0,1,0,0,0],
+            [0,1,1,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,1,1,0],
+            [0,0,1,0,0],
+            [0,0,1,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,0,0,0],
+            [0,1,1,1,0],
+            [0,0,0,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ],
     'l' : [
-    [0,0,0,0,0],
-    [0,0,1,0,0],
-    [0,0,1,0,0],
-    [0,0,1,1,0],
-    [0,0,0,0,0]]
-}
-
-pivots = {
-    'i' : [2,2],
-    't' : [2,2],
-    'o' : [2,2],
-    'z' : [2,2],
-    's' : [2,2],
-    'j' : [2,2],
-    'l' : [2,2]
+        [
+            [0,0,1,0,0],
+            [0,0,1,0,0],
+            [0,0,1,1,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ],
+        [
+            [0,0,0,0,0],
+            [0,1,1,1,0],
+            [0,1,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+        ]
+    ]
 }
 
 colors = {
-    'red'       : (255,0,0),
-    'lime'      : (0,255,0),
-    'cyan'      : (0,255,255),
-    'yellow'    : (255,255,0)
+    1 : (255,0,0),
+    2 : (0,255,0),
+    3 : (0,255,255),
+    4 : (255,255,0)
 }
 
 class piece:
 
     def __init__(self):
-        self.x = 2
+        self.x = 4
         self.y = 0
-        self.tetromino = random.choice(tetrominoes.keys())
+        self.tetromino_name = random.choice(tetrominoes.keys())
         self.color = colors[random.choice(colors.keys())]
-        self.piece = tetrominoes[self.tetromino]
-        self.pivot = pivots[self.tetromino]
-
-    def rotate(self):
-        if self.tetromino is not 'o':
-            temp = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
-
-            for row_count, row in enumerate(self.piece):
-                for col_count, col in enumerate(row):
-                    if self.piece[row_count][col_count] == 1:
-                        new_location = self.rotate_block(row_count, col_count, self.pivot[0], self.pivot[1], -90)
-                        temp[new_location[0]][new_location[1]] = 1
-                    elif self.piece[row_count][col_count] == 2:
-                        temp[row_count][col_count] = 2
-            self.piece = temp
-        
-    def rotate_block(self, x, y, pivot_x, pivot_y, degrees):
-        new_x = (x - pivot_x) * math.cos(math.radians(degrees)) - (y - pivot_y) * math.sin(math.radians(degrees)) + pivot_x
-        new_y = (y - pivot_y) * math.cos(math.radians(degrees)) + (x - pivot_x) * math.sin(math.radians(degrees)) + pivot_y
-        return int(round(new_x)), int(round(new_y))
+        self.frames = len(tetrominoes[self.tetromino_name]) - 1
+        self.current_frame = random.randint(0,self.frames)
+        self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
 
     def draw(self, screen):
-        for row_count, row in enumerate(self.piece):
+        for row_count, row in enumerate(self.tetromino):
             for col_count, col in enumerate(row):
                 if col == 1:
                     pygame.draw.rect(screen, self.color, ((block_size * col_count) + (self.x * block_size), (block_size * row_count) + ((self.y * block_size)), block_size, block_size))
 
+    def rotate(self):
+        if self.current_frame == self.frames:
+            self.current_frame = 0
+        else:
+            self.current_frame += 1
+        
+        self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
+
     def move_down(self, speed):
-        self.y = self.y + speed
+        if self.can_move():
+            self.y = self.y + speed
 
     def move_left(self):
         self.x = self.x - 1
 
     def move_right(self):
         self.x = self.x + 1
+
+    def can_move(self):
+        return True
  
 # initialize game engine
 pygame.init()
@@ -168,7 +241,7 @@ while done == False:
 
     # write game logic here
 
-    if piece.y > 22:
+    if piece.y > board_height:
         piece.__init__()
 
     # clear the screen before drawing
