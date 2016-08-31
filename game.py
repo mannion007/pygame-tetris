@@ -251,6 +251,19 @@ class board(object):
                     if col > 0:
                         pygame.draw.rect(screen, colors[col], (block_size * col_count, block_size * row_count, block_size, block_size))
 
+    def remove_completed_lines(self):
+        for row_count, row in enumerate(self.board):
+            row_completed = True
+            for col in row:
+                if col < 1:
+                    row_completed = False
+            if row_completed:
+                self.board.pop(row_count)
+                self.board.insert(row_count, [0] * board_width)
+                for row_to_pull_down in range(row_count, 0, -1):
+                    for col_count in range(board_width):
+                        self.board[row_to_pull_down][col_count] = self.board[row_to_pull_down-1][col_count]
+
 # initialize game engine
 pygame.init()
 board = board()
@@ -282,10 +295,9 @@ while done == False:
                 piece.move_horizontal(1)
 
     # write game logic here
-
-    #if piece.y > board_height:
     if piece.has_vertical_collision and not piece.can_move_down(board.board):
         piece.add_to_board(board)
+        board.remove_completed_lines()
         piece.__init__()
 
     # clear the screen before drawing
