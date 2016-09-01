@@ -5,10 +5,9 @@ import random
 board_width = 13
 board_height = 24
 block_size = 40
-size = [board_width * block_size, board_height * block_size]
+size = [board_width * block_size + 250, board_height * block_size]
 
 game_speed = 200
-
 move_down_event = pygame.USEREVENT + 1
 pygame.time.set_timer(move_down_event, game_speed)
 
@@ -171,13 +170,13 @@ colors = {
 
 class piece(object):
 
-    def __init__(self):
+    def __init__(self, tetromino):
         self.x = 4
         self.y = 0
-        self.tetromino_name = random.choice(tetrominoes.keys())
-        self.color = random.choice(colors.keys())
-        self.frames = len(tetrominoes[self.tetromino_name]) - 1
-        self.current_frame = random.randint(0,self.frames)
+
+        self.tetromino_name = tetromino['tetromino']
+        self.color = tetromino['color']
+        self.current_frame = tetromino['frame']
         self.tetromino = tetrominoes[self.tetromino_name][self.current_frame]
         self.has_vertical_collision = False
 
@@ -188,7 +187,7 @@ class piece(object):
                     pygame.draw.rect(screen, colors[self.color], ((block_size * col_count) + (self.x * block_size), (block_size * row_count) + ((self.y * block_size)), block_size, block_size))
 
     def get_next_frame(self):
-        if self.current_frame == self.frames:
+        if self.current_frame == len(tetrominoes[self.tetromino_name]) - 1:
             return 0
         else:
             return self.current_frame + 1
@@ -252,22 +251,48 @@ class board(object):
                         pygame.draw.rect(screen, colors[col], (block_size * col_count, block_size * row_count, block_size, block_size))
 
     def remove_completed_lines(self):
+        completed_count = 0
         for row_count, row in enumerate(self.board):
             row_completed = True
             for col in row:
                 if col < 1:
                     row_completed = False
             if row_completed:
+                completed_count = completed_count + 1
                 self.board.pop(row_count)
                 self.board.insert(row_count, [0] * board_width)
                 for row_to_pull_down in range(row_count, 0, -1):
                     for col_count in range(board_width):
                         self.board[row_to_pull_down][col_count] = self.board[row_to_pull_down-1][col_count]
+        return completed_count
+
+class game(object):
+
+    score = 0
+
+    def __init__(self):
+        self.next_tetromino = self.get_tetromino()
+        self.current_tetromino = self.get_tetromino()
+
+    def get_tetromino(self):
+        tetromino = random.choice(tetrominoes.keys())
+        tetromino_color = random.choice(colors.keys())
+        teromino_frame = random.randint(0, len(tetrominoes[tetromino]) - 1)
+        return {'tetromino' : tetromino, 'color' : tetromino_color, 'frame' : teromino_frame}
+
+    def get_next_tetromino(self):
+        self.current_tetromino = self.next_tetromino
+        self.next_tetromino = self.get_tetromino()
+
+    def update_score(self, lines_cleared):
+        self.score = self.score + (100 * lines_cleared)
 
 # initialize game engine
 pygame.init()
+game = game()
 board = board()
-piece = piece()
+
+piece = piece(game.current_tetromino)
 
 # set screen width/height and caption
 screen = pygame.display.set_mode(size)
@@ -297,8 +322,10 @@ while done == False:
     # write game logic here
     if piece.has_vertical_collision and not piece.can_move_down(board.board):
         piece.add_to_board(board)
-        board.remove_completed_lines()
-        piece.__init__()
+        completed_lines = board.remove_completed_lines()
+        game.update_score(completed_lines)
+        game.get_next_tetromino()
+        piece.__init__(game.current_tetromino)
 
     # clear the screen before drawing
     screen.fill((0,0,0))
@@ -306,6 +333,14 @@ while done == False:
     # write draw code here
     board.draw(screen)
     piece.draw(screen)
+
+    #font = pygame.font.Font(None, 36)
+    font=pygame.font.SysFont("comicsansms",30)
+    text = font.render('score ' + str(game.score), 0, (255, 255, 255))
+    textpos = text.get_rect()
+    textpos.top = 50
+    textpos.left = size[0] - 200
+    screen.blit(text, textpos)
 
     # display what's drawn. this might change.
     pygame.display.update()
